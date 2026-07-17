@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-[#f8fafc]">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelMap - AI-Powered Travel Planning & Local Gems</title>
+    <meta name="description"
+        content="Plan your next adventure with TravelMap. Discover hidden local gems, curate custom AI itineraries, explore trending spots, and connect with local guides.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --color-brand-amber: #d97706; /* Darker amber for better contrast on light bg */
+            --color-brand-cyan: #0891b2; /* Darker cyan */
+            --color-brand-emerald: #059669; /* Darker emerald */
+            --color-brand-violet: #7c3aed; /* Darker violet */
+        }
+
+        /* Scrolled state for the full-width navbar */
+        header.scrolled {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            height: 64px !important;
+        }
+
+        /* Custom Keyframes and Utilities in CSS */
+        @utility animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @utility animate-float-delayed {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 3s;
+        }
+        @utility animate-spin-slow {
+            animation: spin 8s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #d97706, #b45309, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Console styling configured for light theme body but dark terminal */
+        .itinerary-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 15px;
+            color: #f8fafc;
+            animation: slideUp 0.6s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .itinerary-card h4 {
+            color: #fbbf24;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            padding-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .itinerary-day {
+            margin-bottom: 20px;
+        }
+
+        .day-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #22d3ee;
+            margin-bottom: 8px;
+        }
+
+        .day-items {
+            list-style-type: none;
+            padding-left: 10px;
+            border-left: 2px solid rgba(34, 211, 238, 0.3);
+        }
+
+        .day-items li {
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            position: relative;
+            padding-left: 12px;
+        }
+
+        .day-items li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: #fbbf24;
+        }
+    </style>
+</head>
+
+<body class="font-sans text-slate-700 antialiased overflow-x-hidden bg-[#f8fafc]">
+
+    <!-- Ambient Glow Background Elements -->
+    <div
+        class="absolute top-[-100px] right-[-100px] w-[600px] h-[600px] rounded-full bg-radial from-amber-500/8 to-transparent filter blur-[140px] pointer-events-none z-[-1] animate-pulse duration-[15s]">
+    </div>
+    <div
+        class="absolute top-[600px] left-[-200px] w-[600px] h-[600px] rounded-full bg-radial from-cyan-500/8 to-transparent filter blur-[140px] pointer-events-none z-[-1] animate-pulse duration-[20s]">
+    </div>
+    <div
+        class="absolute bottom-[200px] right-[-100px] w-[600px] h-[600px] rounded-full bg-radial from-violet-500/8 to-transparent filter blur-[140px] pointer-events-none z-[-1]">
+    </div>
+
+    <!-- Top Header Full Width & Square -->
+    <header
+        class="fixed top-0 left-0 right-0 w-full h-[70px] z-50 bg-white/75 backdrop-blur-xl border-b border-slate-200/80 shadow-md transition-all duration-300"
+        id="navbar">
+        <div class="flex items-center justify-between h-full max-w-7xl mx-auto px-8">
+            <a href="#" class="flex items-center gap-2.5 text-xl font-extrabold text-slate-900 decoration-0"
+                id="nav-logo">
+                <i
+                    class="fa-solid fa-map-location-dot text-2xl text-brand-amber bg-gradient-to-r from-brand-amber to-brand-cyan bg-clip-text text-transparent"></i>
+                <span>Travel<span class="gradient-text">Map</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8" id="nav-menu">
+                <a href="#hero"
+                    class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-all duration-300 relative py-1.5 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-brand-amber after:to-brand-cyan after:transition-all after:duration-300 hover:after:w-full active"
+                    id="link-home">Home</a>
+                <a href="#features"
+                    class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-all duration-300 relative py-1.5 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-brand-amber after:to-brand-cyan after:transition-all after:duration-300 hover:after:w-full"
+                    id="link-features">Features</a>
+                <a href="#explore"
+                    class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-all duration-300 relative py-1.5 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-brand-amber after:to-brand-cyan after:transition-all after:duration-300 hover:after:w-full"
+                    id="link-explore">Discover</a>
+                <a href="#ai-planner"
+                    class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-all duration-300 relative py-1.5 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-brand-amber after:to-brand-cyan after:transition-all after:duration-300 hover:after:w-full"
+                    id="link-planner">AI Planner</a>
+                <a href="#stats"
+                    class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-all duration-300 relative py-1.5 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-brand-amber after:to-brand-cyan after:transition-all after:duration-300 hover:after:w-full"
+                    id="link-stats">Stats</a>
+            </nav>
+
+            <div class="flex items-center gap-5">
+
+                <a href="#ai-planner"
+                    class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-brand-amber to-amber-700 hover:from-amber-500 hover:to-brand-amber shadow-lg shadow-brand-amber/20 hover:shadow-brand-amber/40 hover:-translate-y-0.5 transition-all duration-300"
+                    id="btn-nav-cta">
+                    <span>Try AI Planner</span>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </a>
+                <button class="md:hidden bg-transparent border-0 text-slate-800 text-xl cursor-pointer"
+                    id="mobile-toggle" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full">
+        <!-- Hero Section -->
+        <section id="hero" class="pt-[10px] px-[8%] max-w-[1600px] mx-auto min-h-screen flex items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center w-full">
+                <div class="flex flex-col text-left">
+                    <div class="mb-5">
+                        <span
+                            class="bg-amber-500/10 border border-amber-500/20 text-brand-amber px-4 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-2">
+                            <i class="fa-solid fa-sparkles"></i> AI-Powered Travel v2.5
+                        </span>
+                    </div>
+                    <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6 text-slate-900"
+                        id="hero-main-title">
+                        Discover the World's <br>
+                        <span class="gradient-text">Hidden Gems</span>
+                    </h1>
+                    <p class="text-base sm:text-lg text-slate-600 mb-10 max-w-[580px]">
+                        Plan, explore, and share your journeys with TravelMap. Craft personalized AI-driven itineraries,
+                        locate nearby secret spots, and unlock unforgettable travel moments.
+                    </p>
+
+                    <!-- Search Widget -->
+                    <div class="bg-white border border-slate-200 p-3 rounded-[40px] md:rounded-[50px] flex flex-col md:flex-row items-center gap-4 md:gap-2 shadow-xl max-w-[650px] mb-10 w-full"
+                        id="search-widget">
+                        <div class="flex items-center gap-2.5 px-4 flex-1 w-full">
+                            <i class="fa-solid fa-location-dot text-brand-amber text-lg"></i>
+                            <input type="text" id="search-city"
+                                class="bg-transparent border-0 outline-none text-slate-800 text-sm w-full font-sans"
+                                placeholder="Where to? (e.g. Kyoto, Dubai)" value="Kyoto">
+                        </div>
+                        <div class="hidden md:block w-[1px] h-7 bg-slate-200"></div>
+                        <div class="flex items-center gap-2.5 px-4 flex-1 w-full">
+                            <i class="fa-solid fa-tags text-brand-amber text-lg"></i>
+                            <select id="search-category"
+                                class="bg-transparent border-0 outline-none text-slate-800 text-sm w-full font-sans cursor-pointer">
+                                <option class="bg-white text-slate-800" value="all">All Categories</option>
+                                <option class="bg-white text-slate-800" value="temples">Temples & Culture</option>
+                                <option class="bg-white text-slate-800" value="nature">Nature & Views</option>
+                                <option class="bg-white text-slate-800" value="stays">Luxury Stays</option>
+                                <option class="bg-white text-slate-800" value="cafes">Cafes & Dining</option>
+                            </select>
+                        </div>
+                        <button
+                            class="w-full md:w-auto px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-r from-brand-amber to-amber-700 hover:from-amber-500 hover:to-brand-amber shadow-lg shadow-brand-amber/20 hover:shadow-brand-amber/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                            id="btn-hero-search">
+                            <span>Search</span>
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+
+                    <!-- Mini Stats -->
+                    <div class="flex items-center gap-6 sm:gap-8">
+                        <div class="flex flex-col">
+                            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">50K+</span>
+                            <span class="text-xs text-slate-500 mt-1">Active Explorers</span>
+                        </div>
+                        <div class="w-[1px] h-9 bg-slate-200"></div>
+                        <div class="flex flex-col">
+                            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">12K+</span>
+                            <span class="text-xs text-slate-500 mt-1">Verified Spots</span>
+                        </div>
+                        <div class="w-[1px] h-9 bg-slate-200"></div>
+                        <div class="flex flex-col">
+                            <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-none">4.9★</span>
+                            <span class="text-xs text-slate-500 mt-1">User Rating</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Interactive Visualizer -->
+                <div class="flex justify-center relative w-full mt-10 lg:mt-0">
+                    <div class="relative w-full max-w-[480px]">
+                        <div
+                            class="relative rounded-[30px] overflow-hidden border border-slate-200 shadow-xl aspect-square">
+                            <img src="hero_bg.png" alt="Travel Destination Scenic View"
+                                class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                            <div
+                                class="absolute bottom-6 left-[-15px] bg-white/85 backdrop-blur-xl border border-slate-200/80 p-3.5 px-5 rounded-2xl flex items-center gap-4 shadow-xl animate-float w-[250px]">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-gradient-to-r from-brand-amber to-amber-700 flex items-center justify-center text-white font-semibold">
+                                    <i class="fa-solid fa-location-arrow"></i>
+                                </div>
+                                <div class="flex flex-col">
+                                    <h4 class="text-sm font-bold text-slate-900 leading-tight">Next Destination</h4>
+                                    <p class="text-xxs text-slate-500 mt-0.5">Maia Island, Polynesia</p>
+                                </div>
+                            </div>
+                            <div
+                                class="absolute top-8 right-[-15px] bg-white/85 backdrop-blur-xl border border-slate-200/80 p-3.5 px-5 rounded-2xl flex flex-col gap-1 shadow-xl animate-float-delayed w-[210px]">
+                                <div class="flex gap-0.5 text-brand-amber text-xxs">
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                    <i class="fa-solid fa-star"></i>
+                                </div>
+                                <p class="text-xxs font-bold text-slate-900 mt-1">9.8/10 Exceptional reviews</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-20 px-[8%] max-w-[1600px] mx-auto border-t border-slate-200/60">
+            <div class="text-center mb-16">
+                <span class="text-xs font-bold uppercase tracking-widest text-brand-cyan mb-3 inline-block">Core
+                    Features</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Designed for Modern Adventurers</h2>
+                <p class="text-sm sm:text-base text-slate-600 max-w-[600px] mx-auto">Experience travel planning
+                    redefined. Fast, intelligent, community-driven, and local-first.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white/85 backdrop-blur-xl border border-slate-200/80 p-9 rounded-3xl hover:-translate-y-2 hover:border-slate-300 hover:shadow-xl transition-all duration-300 relative overflow-hidden group shadow-sm"
+                    id="feat-1">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-brand-amber/10 text-brand-amber flex items-center justify-center text-xl mb-6 group-hover:scale-110 group-hover:rotate-[5deg] transition-all duration-300">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">AI-Powered Itineraries</h3>
+                    <p class="text-sm text-slate-600 mb-6 min-h-[70px]">Tell us your interests and budget, and watch our
+                        artificial intelligence build custom day-by-day routes complete with maps.</p>
+                    <a href="#ai-planner"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-brand-amber hover:gap-3 transition-all duration-300">Try
+                        Generator <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+
+                <div class="bg-white/85 backdrop-blur-xl border border-slate-200/80 p-9 rounded-3xl hover:-translate-y-2 hover:border-slate-300 hover:shadow-xl transition-all duration-300 relative overflow-hidden group shadow-sm"
+                    id="feat-2">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-brand-emerald/10 text-brand-emerald flex items-center justify-center text-xl mb-6 group-hover:scale-110 group-hover:rotate-[5deg] transition-all duration-300">
+                        <i class="fa-solid fa-gem"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Hidden Gems Search</h3>
+                    <p class="text-sm text-slate-600 mb-6 min-h-[70px]">Ditch the tourist traps. Find verified secrets,
+                        secluded viewpoints, and local spots approved by travel curators.</p>
+                    <a href="#explore"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-brand-emerald hover:gap-3 transition-all duration-300">Explore
+                        Gems <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+
+                <div class="bg-white/85 backdrop-blur-xl border border-slate-200/80 p-9 rounded-3xl hover:-translate-y-2 hover:border-slate-300 hover:shadow-xl transition-all duration-300 relative overflow-hidden group shadow-sm"
+                    id="feat-3">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-brand-cyan/10 text-brand-cyan flex items-center justify-center text-xl mb-6 group-hover:scale-110 group-hover:rotate-[5deg] transition-all duration-300">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Social Community Feed</h3>
+                    <p class="text-sm text-slate-600 mb-6 min-h-[70px]">Connect with a network of fellow travelers.
+                        Share coordinates, high-resolution media, reviews, and plan group trips.</p>
+                    <span
+                        class="absolute top-5 right-5 text-[10px] font-bold uppercase bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-500">New
+                        API</span>
+                </div>
+
+                <div class="bg-white/85 backdrop-blur-xl border border-slate-200/80 p-9 rounded-3xl hover:-translate-y-2 hover:border-slate-300 hover:shadow-xl transition-all duration-300 relative overflow-hidden group shadow-sm"
+                    id="feat-4">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-brand-violet/10 text-brand-violet flex items-center justify-center text-xl mb-6 group-hover:scale-110 group-hover:rotate-[5deg] transition-all duration-300">
+                        <i class="fa-solid fa-handshake-angle"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-3">Verified Partners</h3>
+                    <p class="text-sm text-slate-600 mb-6 min-h-[70px]">Stay and tour with local hosts, guides, and
+                        hotels vetted directly by the TravelMap admin administration team.</p>
+                    <span
+                        class="absolute top-5 right-5 text-[10px] font-bold uppercase bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg text-slate-500">Partner
+                        Portal</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Destination Showcase Section -->
+        <section id="explore" class="py-20 px-[8%] max-w-[1600px] mx-auto border-t border-slate-200/60">
+            <div class="text-center mb-16">
+                <span class="text-xs font-bold uppercase tracking-widest text-brand-cyan mb-3 inline-block">Curated
+                    Travel</span>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Explore Trending Destinations</h2>
+                <p class="text-sm sm:text-base text-slate-600 max-w-[600px] mx-auto">Browse through the top destinations
+                    currently loved by the TravelMap community.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex justify-center flex-wrap gap-3.5 mb-12">
+                <button
+                    class="bg-slate-100 border border-slate-200 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-slate-900 cursor-pointer transition-all duration-300 tab-btn active"
+                    data-filter="all" id="tab-all">All Places</button>
+                <button
+                    class="bg-slate-100 border border-slate-200 px-6 py-2.5 rounded-full text-sm font-semibold text-slate-600 hover:text-slate-900 hover:border-slate-300 cursor-pointer transition-all duration-300 tab-btn"
+                    data-filter="gems" id="tab-gems">Hidden Gems</button>
+                <button
+                    class="bg-slate-100 border border-slate-200 px-6 py-2.5 rounded-full text-sm font-semibold text-slate-600 hover:text-slate-900 hover:border-slate-300 cursor-pointer transition-all duration-300 tab-btn"
+                    data-filter="stays" id="tab-stays">Luxury Stays</button>
+                <button
+                    class="bg-slate-100 border border-slate-200 px-6 py-2.5 rounded-full text-sm font-semibold text-slate-600 hover:text-slate-900 hover:border-slate-300 cursor-pointer transition-all duration-300 tab-btn"
+                    data-filter="trending" id="tab-trending">Trending</button>
+            </div>
+
+            <!-- Grid of Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="destinations-grid">
+                <!-- Card 1: Kyoto -->
+                <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden hover:-translate-y-1.5 hover:border-slate-300 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col dest-card"
+                    data-category="gems trending">
+                    <div class="relative w-full aspect-[1.5] overflow-hidden">
+                        <img src="kyoto.png" alt="Kyoto, Japan Temples"
+                            class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span
+                            class="absolute top-4 left-4 bg-white/95 backdrop-blur-md border border-slate-100 px-3 py-1 rounded-xl text-xxs font-bold text-brand-cyan">Hidden
+                            Gem</span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide"><i
+                                    class="fa-solid fa-location-dot text-brand-amber mr-1"></i> Kyoto, Japan</span>
+                            <span class="text-xs font-bold text-slate-900 flex items-center gap-1"><i
+                                    class="fa-solid fa-star text-brand-amber"></i> 4.9</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2 leading-snug">Kiyomizu-dera Temple & Bamboo
+                            Paths</h3>
+                        <p class="text-xs text-slate-500 mb-6 flex-1">Beat the crowds with early morning paths winding
+                            past ancient temples and towering bamboo groves.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <span class="text-xs text-slate-500"><i
+                                    class="fa-solid fa-route text-brand-cyan mr-1.5"></i> 2.1 km to Center</span>
+                            <button
+                                class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700 hover:text-brand-amber hover:border-brand-amber transition-all duration-300 cursor-pointer btn-circle"
+                                aria-label="Save Place" id="btn-save-kyoto">
+                                <i class="fa-regular fa-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Dubai -->
+                <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden hover:-translate-y-1.5 hover:border-slate-300 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col dest-card"
+                    data-category="trending stays">
+                    <div class="relative w-full aspect-[1.5] overflow-hidden">
+                        <img src="dubai.png" alt="Dubai Marina View"
+                            class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span
+                            class="absolute top-4 left-4 bg-white/95 backdrop-blur-md border border-slate-100 px-3 py-1 rounded-xl text-xxs font-bold text-brand-amber">Trending</span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide"><i
+                                    class="fa-solid fa-location-dot text-brand-amber mr-1"></i> Dubai, UAE</span>
+                            <span class="text-xs font-bold text-slate-900 flex items-center gap-1"><i
+                                    class="fa-solid fa-star text-brand-amber"></i> 4.8</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2 leading-snug">The Penthouse & Dubai Marina
+                            View</h3>
+                        <p class="text-xs text-slate-500 mb-6 flex-1">Breathtaking views overlooking the marina canal,
+                            featuring top luxury accommodations and dining.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <span class="text-xs text-slate-500"><i
+                                    class="fa-solid fa-route text-brand-cyan mr-1.5"></i> 0.5 km to Center</span>
+                            <button
+                                class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700 hover:text-brand-amber hover:border-brand-amber transition-all duration-300 cursor-pointer btn-circle"
+                                aria-label="Save Place" id="btn-save-dubai">
+                                <i class="fa-regular fa-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Maia Island -->
+                <div class="bg-white border border-slate-200 rounded-3xl overflow-hidden hover:-translate-y-1.5 hover:border-slate-300 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col dest-card"
+                    data-category="gems stays">
+                    <div class="relative w-full aspect-[1.5] overflow-hidden">
+                        <img src="hero_bg.png" alt="Maia Island resort"
+                            class="w-full h-full object-cover hover:scale-105 transition-all duration-500">
+                        <span
+                            class="absolute top-4 left-4 bg-white/95 backdrop-blur-md border border-slate-100 px-3 py-1 rounded-xl text-xxs font-bold text-brand-cyan">Luxury
+                            Stay</span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-1">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide"><i
+                                    class="fa-solid fa-location-dot text-brand-amber mr-1"></i> Polynesia</span>
+                            <span class="text-xs font-bold text-slate-900 flex items-center gap-1"><i
+                                    class="fa-solid fa-star text-brand-amber"></i> 5.0</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 mb-2 leading-snug">Maia Reef Resort & Overwater
+                            Stays</h3>
+                        <p class="text-xs text-slate-500 mb-6 flex-1">A premium ecological villa retreat directly on the
+                            turquoise lagoon sands. Inclusive boat tours.</p>
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                            <span class="text-xs text-slate-500"><i
+                                    class="fa-solid fa-route text-brand-cyan mr-1.5"></i> 12.4 km to Center</span>
+                            <button
+                                class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700 hover:text-brand-amber hover:border-brand-amber transition-all duration-300 cursor-pointer btn-circle"
+                                aria-label="Save Place" id="btn-save-maia">
+                                <i class="fa-regular fa-bookmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive AI Planner Section -->
+        <section id="ai-planner" class="py-20 px-[8%] max-w-[1600px] mx-auto border-t border-slate-200/60">
+            <div class="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr] gap-12 items-center">
+                <div class="flex flex-col">
+                    <span
+                        class="text-xs font-bold uppercase tracking-widest text-brand-amber mb-3 inline-flex items-center gap-2"><i
+                            class="fa-solid fa-bolt"></i> Live Simulation</span>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Design Your Custom Itinerary in
+                        Seconds</h2>
+                    <p class="text-sm sm:text-base text-slate-600 mb-8 max-w-[500px]">Experience the power of TravelMap
+                        AI. Choose your parameters and watch our planning engine craft a detailed travel timeline
+                        instantly.</p>
+
+                    <div class="bg-white border border-slate-200 p-8 rounded-3xl shadow-lg w-full">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                            <div class="flex flex-col gap-2">
+                                <label for="plan-destination"
+                                    class="text-xxs font-bold uppercase text-slate-500 tracking-wider">Destination</label>
+                                <input type="text" id="plan-destination"
+                                    class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none text-sm focus:border-brand-amber focus:bg-white transition-all duration-300"
+                                    value="Kyoto, Japan">
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label for="plan-days"
+                                    class="text-xxs font-bold uppercase text-slate-500 tracking-wider">Duration</label>
+                                <select id="plan-days"
+                                    class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none text-sm focus:border-brand-amber focus:bg-white transition-all duration-300 cursor-pointer">
+                                    <option class="bg-white text-slate-800" value="1">1 Day Express</option>
+                                    <option class="bg-white text-slate-800" value="3" selected>3 Days Standard</option>
+                                    <option class="bg-white text-slate-800" value="5">5 Days Extended</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+                            <div class="flex flex-col gap-2">
+                                <label for="plan-style"
+                                    class="text-xxs font-bold uppercase text-slate-500 tracking-wider">Travel
+                                    Style</label>
+                                <select id="plan-style"
+                                    class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none text-sm focus:border-brand-amber focus:bg-white transition-all duration-300 cursor-pointer">
+                                    <option class="bg-white text-slate-800" value="adventure">Adventure & Outdoor
+                                    </option>
+                                    <option class="bg-white text-slate-800" value="culture" selected>Cultural &
+                                        Historical</option>
+                                    <option class="bg-white text-slate-800" value="leisure">Relaxed & Leisure</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <label for="plan-budget"
+                                    class="text-xxs font-bold uppercase text-slate-500 tracking-wider">Budget
+                                    Level</label>
+                                <select id="plan-budget"
+                                    class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-slate-800 outline-none text-sm focus:border-brand-amber focus:bg-white transition-all duration-300 cursor-pointer">
+                                    <option class="bg-white text-slate-800" value="budget">Budget-Friendly</option>
+                                    <option class="bg-white text-slate-800" value="moderate" selected>Mid-Range</option>
+                                    <option class="bg-white text-slate-800" value="luxury">Luxury & Premium</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button
+                            class="w-full py-3.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-amber to-amber-700 hover:from-amber-500 hover:to-brand-amber shadow-lg shadow-brand-amber/20 hover:shadow-brand-amber/40 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                            id="btn-generate-itinerary">
+                            <span>Generate AI Itinerary</span>
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Interactive Results Output Panel -->
+                <div
+                    class="bg-[#0f172a] border border-slate-200/80 rounded-2xl shadow-xl h-[480px] flex flex-col overflow-hidden w-full">
+                    <div class="bg-white/3 px-5 py-3.5 flex items-center border-b border-white/5">
+                        <div class="flex gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                        </div>
+                        <div class="ml-5 text-[10px] text-gray-500 font-mono">travelmap-ai-engine.log</div>
+                    </div>
+                    <div class="p-6 font-mono text-[11px] overflow-y-auto flex-1 text-sky-400"
+                        id="planner-output-screen">
+                        <div class="flex flex-col items-center justify-center h-full text-white/20 text-center">
+                            <i class="fa-solid fa-terminal text-[45px] mb-3.5"></i>
+                            <p>Ready to receive itinerary parameters.</p>
+                            <p class="text-[10px] mt-1.5">Click "Generate AI Itinerary" to kick off the planning engine.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section id="stats" class="py-20 px-[8%] max-w-[1600px] mx-auto border-t border-slate-200/60">
+            <div
+                class="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-white border border-slate-200/80 p-12 rounded-[30px] text-center shadow-lg">
+                <div class="flex flex-col">
+                    <h3 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-b from-slate-900 to-slate-700 bg-clip-text text-transparent mb-1"
+                        id="stat-users">14,289</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 font-semibold">Registered Users</p>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-b from-slate-900 to-slate-700 bg-clip-text text-transparent mb-1"
+                        id="stat-partners">342</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 font-semibold">Approved Partners</p>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-b from-slate-900 to-slate-700 bg-clip-text text-transparent mb-1"
+                        id="stat-places">1,821</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 font-semibold">Live Tourist Places</p>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-4xl sm:text-5xl font-extrabold bg-gradient-to-b from-slate-900 to-slate-700 bg-clip-text text-transparent mb-1"
+                        id="stat-community">8,941</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 font-semibold">Community Posts</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 border-t border-slate-200/80 py-20 px-[8%]">
+        <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1.2fr] gap-10 max-w-7xl mx-auto mb-16">
+            <div class="flex flex-col gap-5">
+                <a href="#" class="flex items-center gap-2 text-lg font-bold text-slate-900 decoration-none">
+                    <i class="fa-solid fa-map-location-dot text-brand-amber text-xl"></i>
+                    <span>Travel<span class="gradient-text">Map</span></span>
+                </a>
+                <p class="text-sm text-slate-600 max-w-[300px]">Connecting explorers with hidden local treasures and
+                    AI-driven adventures worldwide.</p>
+                <div class="flex gap-3.5">
+                    <a href="#" aria-label="Twitter"
+                        class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center text-sm hover:text-white hover:bg-slate-900 hover:border-slate-900 hover:-translate-y-1 transition-all duration-300"><i
+                            class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"
+                        class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center text-sm hover:text-white hover:bg-slate-900 hover:border-slate-900 hover:-translate-y-1 transition-all duration-300"><i
+                            class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="GitHub"
+                        class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center text-sm hover:text-white hover:bg-slate-900 hover:border-slate-900 hover:-translate-y-1 transition-all duration-300"><i
+                            class="fa-brands fa-github"></i></a>
+                    <a href="#" aria-label="Discord"
+                        class="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center text-sm hover:text-white hover:bg-slate-900 hover:border-slate-900 hover:-translate-y-1 transition-all duration-300"><i
+                            class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Platform</h4>
+                <a href="#features"
+                    class="text-sm text-slate-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Features</a>
+                <a href="#explore"
+                    class="text-sm text-slate-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Discover</a>
+                <a href="#ai-planner"
+                    class="text-sm text-slate-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">AI
+                    Planner</a>
+                <a href="#stats"
+                    class="text-sm text-slate-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Live
+                    Stats</a>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Partnerships</h4>
+                <a href="#"
+                    class="text-sm text-slate-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Register
+                    as Partner</a>
+                <a href="#"
+                    class="text-sm text-gray-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Host
+                    Dashboard</a>
+                <a href="#"
+                    class="text-sm text-gray-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Partner
+                    Guidelines</a>
+                <a href="#"
+                    class="text-sm text-gray-600 hover:text-slate-900 hover:translate-x-1 transition-all duration-300 decoration-none">Developer
+                    API</a>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Stay Adventurous</h4>
+                <p class="text-sm text-slate-600">Get monthly curation of best hidden gems and travel hacks.</p>
+                <form class="flex gap-2 bg-white border border-slate-200 p-1.5 rounded-full w-full" id="newsletter-form"
+                    onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
+                    <input type="email" placeholder="Your email address" required aria-label="Newsletter email"
+                        class="bg-transparent border-0 outline-none text-slate-700 px-4 text-xs flex-1 font-sans">
+                    <button type="submit"
+                        class="w-9 h-9 rounded-full bg-gradient-to-r from-brand-amber to-amber-700 flex items-center justify-center text-white font-bold hover:from-amber-500 hover:to-brand-amber transition-all duration-300 cursor-pointer"
+                        id="btn-subscribe">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div
+            class="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-slate-200/80 max-w-7xl mx-auto">
+            <p class="text-xs text-slate-500">&copy; 2026 TravelMap Inc. All rights reserved. Built for explorers, by
+                explorers.</p>
+            <div class="flex gap-6 mt-4 sm:mt-0">
+                <a href="#"
+                    class="text-xs text-slate-500 hover:text-slate-800 transition-all duration-300 decoration-none">Privacy
+                    Policy</a>
+                <a href="#"
+                    class="text-xs text-slate-500 hover:text-slate-800 transition-all duration-300 decoration-none">Terms
+                    of Use</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="main.js"></script>
+</body>
+
+</html>

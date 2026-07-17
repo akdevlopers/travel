@@ -15,6 +15,17 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
+// Custom health check handler for Accept: application/json requests
+app.get('/', (req, res, next) => {
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+        return res.json({ status: true, message: 'TravelMap API (Node.js) is running!' });
+    }
+    next();
+});
+
+// Serve static web pages (css, js, images, index.html)
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
@@ -37,10 +48,7 @@ app.use('/api', chatRoutes);
 app.use('/api', travelplanRoutes);
 app.use('/api', eventsRoutes);
 
-// Health check
-app.get('/', (req, res) => {
-    res.json({ status: true, message: 'TravelMap API (Node.js) is running!' });
-});
+// Health check fallback handled at the top
 
 // Global error handler (catches Multer errors and other unhandled errors)
 const multer = require('multer');
